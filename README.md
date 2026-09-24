@@ -36,6 +36,7 @@ InsightFlow/
 └── README.md
 ```
 
+own.
 ## Dataset
 
 The [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) covers ~100k orders placed between 2016–2018 across multiple marketplaces in Brazil, with data on orders, products, customers, sellers, payments, and reviews.
@@ -47,11 +48,13 @@ The [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr
 
 ## What each part of the project does
 
-**1. Notebook (`notebooks/`)** — Loads the raw Olist tables, profiles them (shape, nulls, duplicates, key uniqueness), cleans and joins them, and exports the resulting dimension/fact tables used by everything downstream.
+**1. Notebook (`notebook/`)** — Loads the raw Olist tables, profiles them (shape, nulls, duplicates, key uniqueness), cleans and joins them, and builds the resulting dimension/fact tables used by everything downstream.
 
-**2. SQL Reports (`sql_report/`)** — A set of tested, standalone SQL queries answering concrete business questions directly against the star schema: revenue trends, delivery performance, customer repeat-purchase behavior, payment method mix, and review/seller quality. Run `scripts/build_db.py` to load the processed CSVs into a local SQLite database, then run any file in `sql_report/` against it. This layer demonstrates the same insights as the dashboard, but reproducible from raw SQL rather than a BI tool.
+**2. ETL (`etl/`)** — `etl.py` is the reusable, scripted version of the notebook's cleaning logic: it reads `data/raw` and rebuilds `data/processed` from scratch. `build_db.py` loads `data/processed` into a local SQLite database (`insightflow.db`) so the SQL reports can run against it.
 
-**3. Power BI Dashboard (`dashboard/InsightFlow.pbix`)** — Interactive dashboard built on the same star schema, for visual exploration and drill-down (revenue by state/time, delivery SLAs, review scores, top sellers/products).
+**3. SQL Reports (`sql/`)** — A set of tested, standalone SQL queries answering concrete business questions directly against the star schema: revenue trends, delivery performance, customer repeat-purchase behavior, payment method mix, and review/seller quality. This layer demonstrates the same insights as the dashboard, but reproducible from raw SQL rather than a BI tool.
+
+**4. Power BI Dashboard (`powerbi/InsightFlow.pbix`)** — Interactive dashboard built on the same star schema, for visual exploration and drill-down (revenue by state/time, delivery SLAs, review scores, top sellers/products).
 
 ## Key Insights
 
@@ -62,7 +65,7 @@ The [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr
 - **Credit card dominates payments:** 76.8k transactions (avg 3.5 installments), well ahead of boleto and vouchers
 - **Geographic concentration:** São Paulo alone drives ~36% of total revenue
 
-See [`sql_report/RESULTS_SUMMARY.md`](sql_report/RESULTS_SUMMARY.md) for the full breakdown.
+See [`sql/RESULTS_SUMMARY.md`](sql/RESULTS_SUMMARY.md) for the full breakdown.
 
 ## Tech Stack
 
@@ -74,28 +77,37 @@ See [`sql_report/RESULTS_SUMMARY.md`](sql_report/RESULTS_SUMMARY.md) for the ful
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/<your-username>/InsightFlow.git
+git clone https://github.com/Achalbisht05/InsightFlow.git
 cd InsightFlow
 
 # 2. Set up Python environment
 pip install pandas numpy matplotlib seaborn jupyter
 
 # 3. Run the EDA/cleaning notebook
-jupyter notebook notebooks/01_Raw_Data_Exploration.ipynb
+jupyter notebook notebook/01_Raw_Data_Exploration.ipynb
 
-# 4. Build the SQLite database from the cleaned tables
-python scripts/build_db.py
+# 4. Rebuild processed data and the SQLite database
+python etl/etl.py
+python etl/build_db.py
 
 # 5. Run any SQL report, e.g.:
-sqlite3 insightflow.db < sql_report/02_revenue_analysis.sql
+sqlite3 insightflow.db < sql/02_revenue_analysis.sql
 
-# 6. Open dashboard/InsightFlow.pbix in Power BI Desktop
+# 6. Open powerbi/InsightFlow.pbix in Power BI Desktop
 ```
 
 ## Dashboard Preview
 
-*(Add 1–2 screenshots of your Power BI dashboard here — drag the PNGs into a `dashboard/screenshots/` folder and reference them, e.g. `![Overview](dashboard/screenshots/overview.png)`)*
+![InsightFlow Dashboard Overview](reports/overview.png)
+
+[Download the full dashboard (PDF)](reports/InsightFlow_Dashboard.pdf)
+
+The Power BI dashboard covers sales, orders, customers and products from Sep 2016 to Oct 2018.
+
+> **Notes**
+> - Dashboard totals (~16.01M sales, ~99K orders) include all order statuses. The SQL analysis (R$15.84M, 98,666 orders) counts delivered orders only, so the figures differ slightly by design.
+> - Sales and orders drop to zero at the end of the period because the source data is incomplete for late 2018.
 
 ## Author
 
-**Your Name** — [LinkedIn](#) · [Portfolio](#)
+**Achal Bisht** — [GitHub](https://github.com/Achalbisht05)
