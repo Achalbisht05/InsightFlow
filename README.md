@@ -98,7 +98,7 @@ sqlite3 insightflow.db < sql/02_revenue_analysis.sql
 
 ## Dashboard Preview
 
-![InsightFlow Dashboard Overview](reports/overview.png)
+![InsightFlow Dashboard Overview](reports/overview.png.png)
 
 [Download the full dashboard (PDF)](reports/InsightFlow_Dashboard.pdf)
 
